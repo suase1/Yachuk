@@ -2,11 +2,25 @@ from django.shortcuts import render
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import re
-from openpyxl import Workbook, load_workbook
+from openpyxl import load_workbook
 import os
 from django.utils import timezone
-
+from .models import Document
+from .forms import DocumentForm
+from django.shortcuts import redirect
 # Create your views here.
+
+def file_upload(request):
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('main')
+    else:
+        form = DocumentForm()
+    return render(request, 'inventory/file_upload.html', {'form': form})
+
+
 def login(request):
     # posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
     return render(request, 'inventory/login.html', {})
@@ -171,10 +185,14 @@ def kika_Inventory(accordance_link, accordance_codenumber):
 
 # <--------------------integration------------------->
 def comparison(ssaka_inventory, fifa_inventory, kika_inventory):
+
+    document = Document.objects.all()[0].document
+
     Wholesale = {**ssaka_inventory, **fifa_inventory, **kika_inventory}
     print(Wholesale)
     desktoppath = os.path.expanduser('~')
-    yachuk_excel = desktoppath + "\\Desktop\\inventory_information\\ninetofive.xlsx"
+    # yachuk_excel = desktoppath + "\\Desktop\\inventory_information\\ninetofive.xlsx"
+    yachuk_excel = document
     wb_Yachuk = load_workbook(yachuk_excel)
     ws_Yachuk = wb_Yachuk.active
 
